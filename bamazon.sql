@@ -13,6 +13,6 @@ CREATE TABLE products (
 
 INSERT INTO PRODUCTS (product_name, department_name, price, stock_quantity) VALUES
 ('Glue', 'School', 1.5, 50),
-('Composition Notebool', 'School', 1.5, 50),
+('Composition Notebook', 'School', 1.5, 50),
 ('Pencil Case', 'School', 1.5, 50),
 ('Glue', 'School', 1.5, 50);
