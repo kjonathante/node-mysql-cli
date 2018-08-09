@@ -103,15 +103,25 @@ function addToInventory() {
   return new Promise( function(resolve, reject) {
     inquirer.prompt([{
       type: 'list',
-      name: 'productid',
+      name: 'item',
       message: 'Select product to add more ? ',
       choices: getProducts
     },{
       type: 'input',
       name: 'qty',
       message: 'Quanity ?',
-      validate: function(input) { return parseFloat(input) > 0 || 'Wrong Input' }
-    }]).then( function(answers) { 
+      validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
+      filter: function(input) { return parseFloat(input) }
+    },{
+      type: 'confirm',
+      name: 'confirm',
+      default: false,
+      when: function(answer){ return answer.qty > 0 },
+      message: 'Proceed',
+    }]).then( async function(answers) { 
+      if (answers.confirm) {
+        await updateProduct(answers)
+      }
       resolve(true) 
     })
   })
@@ -134,5 +144,18 @@ function getProducts() {
         resolve(arr)
       }
     )
+  })
+}
+
+function updateProduct(answers) {
+  return new Promise( function(resolve, reject) {
+    conn.query({
+      sql: 'UPDATE products SET stock_quantity=? WHERE id=?',
+      values: [answers.item.qty+answers.qty, answers.item.id]
+    }, function(error, results, fields){
+      if (error) throw reject(error)
+
+      resolve()
+    })
   })
 }
