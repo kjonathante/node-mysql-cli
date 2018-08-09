@@ -23,7 +23,7 @@ function main() {
     type: 'list',
     name: 'item',
     message: 'Enter you product selection: ',
-    choices: getData,
+    choices: getProducts,
   },{
     type: 'input',
     name: 'qty',
@@ -41,14 +41,14 @@ function main() {
   }]).then(
     function(answers) {
       if (answers.confirm) {
-        //update
+        setQty(answers)
       }
       conn.end()
     }
   )
 }
 
-function getData() {
+function getProducts() {
   return new Promise( function(resolve, reject) {
     conn.query('SELECT * FROM products WHERE stock_quantity > 0',
       function(error, results, fields){
@@ -58,7 +58,7 @@ function getData() {
         for( var row of results ) {
           arr.push({
             name: row.product_name.padEnd(20) + ' ' + row.price.toFixed(2).padStart(10),
-            value: {id: row.id, price: row.price},
+            value: {id: row.id, price: row.price, qty: row.stock_quantity},
             short: row.product_name + ' @ $' + row.price.toFixed(2),
           })
         }
@@ -78,5 +78,16 @@ function checkQty(qty, answer) {
       
       resolve(results[0].stock_quantity>=qty? true : 'Insufficient quantity!')
     })
+  })
+}
+
+function setQty(answers) {
+  conn.query({
+    sql: 'UPDATE products SET stock_quantity=? WHERE id=?',
+    values: [answers.item.qty-answers.qty, answers.item.id]
+  }, function(error, results, fields){
+    if (error) throw error
+    console.log('Completed.')
+    //console.log('changed ' + results.changedRows + ' rows')
   })
 }
