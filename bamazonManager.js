@@ -209,7 +209,7 @@ function insertProduct(answers) {
         product_name: answers.productName,
         price: price,
         stock_quantity: qty,
-        department_name: 'school',
+        department_id: 1, 
       },
     }, function(error, results, fields) {
       if (error) reject(error)
