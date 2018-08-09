@@ -19,6 +19,7 @@
   "homepage": "https://github.com/kjonathante/storefront#readme",
   "dependencies": {
     "inquirer": "^6.1.0",
-    "mysql": "^2.16.0"
+    "mysql": "^2.16.0",
+    "table": "^4.0.3"
   }
 }

@@ -1,5 +1,8 @@
+var os = require('os')
 var mysql = require('mysql')
 var inquirer = require('inquirer')
+var {table} = require('table')
+
 
 var conn = mysql.createConnection({
   host: 'localhost',
@@ -31,7 +34,7 @@ async function main() {
     answers = await inquirer.prompt([{
       type: 'list',
       name: 'action',
-      message: 'Main Menu',
+      message: 'Supervisor Menu > ',
       choices: mainMenu,
       prefix: '\uD83D\uDDC4\uFE0F ',
     }])
@@ -65,12 +68,48 @@ function viewProductSales() {
       GROUP BY departments.id`,
       function(error, results, fields){
         if (error) throw reject(error)
-
-        for( var row of results ) {
-          console.log(`${row.department_id} ${row.department_name} ${row.over_head_costs} ${row.product_sales} ${row.total_profit}`)
-        }
+        printTable(results)
         resolve(true)
       }
     )
   })
+}
+
+function printTable(results) {
+  var data = []
+
+  var config = {
+    columns: {
+      2: {
+        alignment: 'right',
+      },
+      3: {
+        alignment: 'right',
+      },
+      4: {
+        alignment: 'right',
+      }
+    }
+  }
+
+  var tableHeader = []
+  tableHeader.push('Department ID')
+  tableHeader.push('Department Name')
+  tableHeader.push('Overhead Costs')
+  tableHeader.push('Product Sales')
+  tableHeader.push('Total Profit')
+  data.push( tableHeader )
+
+for( var row of results ) {
+    var tableRow = []
+    tableRow.push(row.department_id)
+    tableRow.push(row.department_name)
+    tableRow.push(row.over_head_costs.toFixed(2))
+    tableRow.push(row.product_sales.toFixed(2))
+    tableRow.push(row.total_profit.toFixed(2))
+
+    data.push( tableRow )
+  }
+  var output = table(data, config)
+  console.log(os.EOL+output+os.EOL)
 }
