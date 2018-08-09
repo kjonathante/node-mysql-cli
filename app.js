@@ -21,7 +21,7 @@ conn.connect( function(error){
 function main() {
   inquirer.prompt([ {
     type: 'list',
-    name: 'id',
+    name: 'item',
     message: 'Enter you product selection: ',
     choices: getData,
   },{
@@ -29,7 +29,7 @@ function main() {
     name: 'qty',
     message: 'How many units would you like to buy ? ',
     default: 0,
-    validate: function() { return true },
+    validate: checkQty,
   }]).then(
     function(answers) {
       console.log(answers)
@@ -48,12 +48,25 @@ function getData() {
         for( var row of results ) {
           arr.push({
             name: row.product_name.padEnd(20) + ' ' + row.price.toFixed(2).padStart(10),
-            value: [row.id, row.price],
+            value: {id: row.id, price: row.price},
             short: row.product_name + ' @ $' + row.price.toFixed(2),
           })
         }
         resolve(arr)
       }
     )
+  })
+}
+
+function checkQty(qty, answer) {
+  return new Promise( function(resolve, reject) {
+    conn.query({
+      sql: 'SELECT stock_quantity FROM products WHERE id=?',
+      values: [answer.item.id]
+    }, function(error, results, fields){
+      if (error) throw reject(error)
+      
+      resolve(results[0].stock_quantity>=qty? true : 'Insufficient quantity!')
+    })
   })
 }
