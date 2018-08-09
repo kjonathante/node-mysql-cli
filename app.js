@@ -30,9 +30,19 @@ function main() {
     message: 'How many units would you like to buy ? ',
     default: 0,
     validate: checkQty,
+  },{
+    type: 'confirm',
+    name: 'confirm',
+    default: false,
+    when: function(answer){ return answer.qty > 0 },
+    message: function(answer){
+      return `Total cost is $${(answer.item.price*answer.qty).toFixed(2)}. Would you like to proceed ?`
+    },
   }]).then(
     function(answers) {
-      console.log(answers)
+      if (answers.confirm) {
+        //update
+      }
       conn.end()
     }
   )
