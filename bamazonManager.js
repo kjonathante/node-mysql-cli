@@ -19,21 +19,120 @@ conn.connect( function(error){
   main()
 })
 
-function main() {
+async function main() {
   var mainMenu = [
     'View Products for Sale',
     'View Low Inventory',    
     'Add to Inventory',
     'Add New Product',
+    'Exit',
   ];
 
-  inquirer.prompt([{
-    type: 'list',
-    name: 'action',
-    message: 'Main Menu: ',
-    choices: mainMenu,
-  }]).then( function(answers) {
-    console.log(answers)
-    conn.end();
+  var answers;
+
+  do {
+    answers = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: 'Main Menu: ',
+      choices: mainMenu,
+    }])
+
+    switch (answers.action) {
+      case 'View Products for Sale':
+        await viewProducts();
+        break;
+      case 'View Low Inventory':
+        await viewLowInventory();
+        break;
+      case 'Add to Inventory':
+        await addToInventory();
+        break;
+      case 'Exit':
+        conn.end()
+        return
+        break
+      default:
+        console.log('Select Action');
+        break;
+    }
+  } while (true);
+}
+
+function viewProducts() {
+  return new Promise( function(resolve, reject) {
+    conn.query(
+      'SELECT * FROM products',
+      function(error, results, fields){
+        if (error) throw reject(error)
+
+        printTable(results)
+        resolve(true)
+      }
+    )
+  })
+}
+
+function viewLowInventory() {
+  return new Promise( function(resolve, reject) {
+    conn.query(
+      'SELECT * FROM products WHERE stock_quantity < 5',
+      function(error, results, fields){
+        if (error) throw reject(error)
+
+        if (results.length > 0)
+          printTable(results)
+        else
+          console.log( 'Everything is above threshold.\n\n' )
+
+        resolve(true)
+      }
+    )
+  })
+}
+
+function printTable(results) {
+  console.log(`${'ID'.padStart(5)} ${'Name'.padEnd(20)} ${'Price'.padStart(10)} ${'Quantity'.padStart(10)}`)
+  for( var row of results ) {
+    console.log(`${(row.id + '').padStart(5)} ${row.product_name.padEnd(20)} ${('$ ' + row.price.toFixed(2)).padStart(10)} ${(row.stock_quantity+'').padStart(10)}`)
+  }
+  console.log('\n\n')
+}
+
+function addToInventory() {
+  return new Promise( function(resolve, reject) {
+    inquirer.prompt([{
+      type: 'list',
+      name: 'productid',
+      message: 'Select product to add more ? ',
+      choices: getProducts
+    },{
+      type: 'input',
+      name: 'qty',
+      message: 'Quanity ?',
+      validate: function(input) { return parseFloat(input) > 0 || 'Wrong Input' }
+    }]).then( function(answers) { 
+      resolve(true) 
+    })
+  })
+}
+
+function getProducts() {
+  return new Promise( function(resolve, reject) {
+    conn.query('SELECT * FROM products',
+      function(error, results, fields){
+        if (error) throw reject(error)
+
+        var arr = []
+        for( var row of results ) {
+          arr.push({
+            name: `${row.product_name.padEnd(20)} ${(row.stock_quantity+'').padStart(5)}`,
+            value: {id: row.id, qty: row.stock_quantity},
+            short: row.product_name + ' ' + row.stock_quantity,
+          })
+        }
+        resolve(arr)
+      }
+    )
   })
 }
