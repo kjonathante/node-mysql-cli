@@ -29,13 +29,13 @@ async function main() {
   ];
 
   var answers;
-
   do {
     answers = await inquirer.prompt([{
       type: 'list',
       name: 'action',
-      message: 'Main Menu: ',
+      message: 'Main Menu',
       choices: mainMenu,
+      prefix: '\uD83D\uDDC4\uFE0F ',
     }])
 
     switch (answers.action) {
@@ -47,6 +47,9 @@ async function main() {
         break;
       case 'Add to Inventory':
         await addToInventory();
+        break;
+      case 'Add New Product':
+        await addNewProduct();
         break;
       case 'Exit':
         conn.end()
@@ -158,6 +161,59 @@ function updateProduct(answers) {
     }, function(error, results, fields) {
       if (error) throw reject(error)
 
+      resolve()
+    })
+  })
+}
+
+function addNewProduct() {
+  return new Promise( function(resolve, reject) { 
+    inquirer.prompt([{
+      type: 'input',
+      name: 'productName',
+      message: 'Name of Product',
+    },{
+      type: 'input',
+      name: 'price',
+      message: 'Selling Price',
+      filter: function(input) { return parseFloat(input) },
+      validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
+    },{
+      type: 'input',
+      name: 'stockQuantity',
+      message: 'Quantity',
+      filter: function(input) { return parseFloat(input) },
+      validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
+    },{
+      type: 'confirm',
+      name: 'confirm',
+      default: false,
+      message: 'Proceed',
+    }]).then(async function(answers) {
+      if (answers.confirm) {
+        await insertProduct(answers)
+      }
+      resolve() 
+    })
+  })
+}
+
+function insertProduct(answers) {
+  return new Promise( function(resolve, reject) {
+    // making sure these resolves to numbers
+    var price = parseFloat(answers.price);
+    var qty = parseFloat(answers.stockQuantity); 
+    conn.query({
+      sql: 'INSERT INTO products SET ?',
+      values: {
+        product_name: answers.productName,
+        price: price,
+        stock_quantity: qty,
+        department_name: 'school',
+      },
+    }, function(error, results, fields) {
+      if (error) reject(error)
+      console.log('\u{2705}  Done adding new product with id #' + results.insertId);
       resolve()
     })
   })
