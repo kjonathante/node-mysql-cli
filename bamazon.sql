@@ -36,3 +36,11 @@ INSERT INTO PRODUCTS (product_name, price, stock_quantity, department_id) VALUES
 ('Monitor',        1.5, 50, 1),
 ('Macbook Air',    1.5, 50, 1),
 ('Processor',      1.5, 50, 1);
+
+SELECT departments.id department_id, department_name, 
+over_head_costs, sum(product_sales) product_sales,
+sum(product_sales) - over_head_costs total_profit
+FROM departments 
+LEFT JOIN products 
+ON departments.id=products.department_id 
+GROUP BY departments.id;
