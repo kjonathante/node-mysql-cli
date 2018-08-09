@@ -92,7 +92,7 @@ function viewLowInventory() {
 }
 
 function printTable(results) {
-  console.log(`${'ID'.padStart(5)} ${'Name'.padEnd(20)} ${'Price'.padStart(10)} ${'Quantity'.padStart(10)}`)
+  console.log(`\n${'ID'.padStart(5)} ${'Name'.padEnd(20)} ${'Price'.padStart(10)} ${'Quantity'.padStart(10)}`)
   for( var row of results ) {
     console.log(`${(row.id + '').padStart(5)} ${row.product_name.padEnd(20)} ${('$ ' + row.price.toFixed(2)).padStart(10)} ${(row.stock_quantity+'').padStart(10)}`)
   }
@@ -110,8 +110,10 @@ function addToInventory() {
       type: 'input',
       name: 'qty',
       message: 'Quanity ?',
+      default: 0,
+      filter: function(input) { return parseFloat(input) },
       validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
-      filter: function(input) { return parseFloat(input) }
+      //prefix: '\u{1F427}',
     },{
       type: 'confirm',
       name: 'confirm',
@@ -149,10 +151,11 @@ function getProducts() {
 
 function updateProduct(answers) {
   return new Promise( function(resolve, reject) {
+    var qtyTotal = parseFloat(answers.item.qty) + parseFloat(answers.qty); // making sure it resolves to numbers
     conn.query({
       sql: 'UPDATE products SET stock_quantity=? WHERE id=?',
-      values: [answers.item.qty+answers.qty, answers.item.id]
-    }, function(error, results, fields){
+      values: [qtyTotal, answers.item.id]
+    }, function(error, results, fields) {
       if (error) throw reject(error)
 
       resolve()
