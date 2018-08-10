@@ -17,7 +17,6 @@ conn.connect( function(error){
   if (error) {
     return console.log(error)
   }
-  //console.log( arguments )
   // start app
   main()
 })
@@ -67,7 +66,7 @@ function viewProductSales() {
       ON departments.id=products.department_id 
       GROUP BY departments.id`,
       function(error, results, fields){
-        if (error) throw reject(error)
+        if (error) reject(error)
         printTable(results)
         resolve(true)
       }
@@ -137,6 +136,7 @@ function addNewDepartment() {
       if (answers.confirm) {
         await insertDepartment(answers)
       }
+      console.log(os.EOL)
       resolve() 
     })
   })
