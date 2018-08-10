@@ -29,7 +29,9 @@ function main() {
     name: 'qty',
     message: 'How many units would you like to buy ? ',
     default: 0,
+    filter: function(input) { return parseFloat(input) },
     validate: checkQty,
+    // validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
   },{
     type: 'confirm',
     name: 'confirm',
@@ -70,7 +72,12 @@ function getProducts() {
 
 function checkQty(qty, answer) {
   return new Promise( function(resolve, reject) {
+    // validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
+
+    if (!(parseFloat(qty) >= 0)) resolve('Wrong Input')
+
     var quantity = parseFloat(qty);
+
     conn.query({
       sql: 'SELECT stock_quantity FROM products WHERE id=?',
       values: [answer.item.id]
@@ -83,12 +90,16 @@ function checkQty(qty, answer) {
 }
 
 function setQty(answers) {
-  conn.query({
-    sql: 'UPDATE products SET stock_quantity=?, product_sales=? WHERE id=?',
-    values: [answers.item.qty-answers.qty, answers.item.productSales + (answers.qty*answers.item.price), answers.item.id]
-  }, function(error, results, fields){
-    if (error) throw error
-    console.log('Completed.')
-    //console.log('changed ' + results.changedRows + ' rows')
+  return new Promise( function(resolve, reject) {
+    conn.query({
+      sql: 'UPDATE products SET stock_quantity=?, product_sales=? WHERE id=?',
+      values: [answers.item.qty-answers.qty, answers.item.productSales + (answers.qty*answers.item.price), answers.item.id]
+    }, function(error, results, fields){
+      if (error) reject(error)
+
+      console.log('\u{2705}  Transaction completed.')
+      //console.log('changed ' + results.changedRows + ' rows')
+      resolve();
+    })
   })
 }
