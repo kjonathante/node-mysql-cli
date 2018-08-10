@@ -1,5 +1,7 @@
+var os = require('os')
 var mysql = require('mysql')
 var inquirer = require('inquirer')
+var {table} = require('table')
 
 var conn = mysql.createConnection({
   host: 'localhost',
@@ -65,7 +67,7 @@ function viewProducts() {
     conn.query(
       'SELECT * FROM products',
       function(error, results, fields){
-        if (error) throw reject(error)
+        if (error) reject(error)
 
         printTable(results)
         resolve(true)
@@ -79,12 +81,12 @@ function viewLowInventory() {
     conn.query(
       'SELECT * FROM products WHERE stock_quantity < 5',
       function(error, results, fields){
-        if (error) throw reject(error)
+        if (error) reject(error)
 
         if (results.length > 0)
           printTable(results)
         else
-          console.log( 'Everything is above threshold.\n\n' )
+          console.log( os.EOL + 'Everything is above threshold.' + os.EOL + os.EOL )
 
         resolve(true)
       }
@@ -93,11 +95,38 @@ function viewLowInventory() {
 }
 
 function printTable(results) {
-  console.log(`\n${'ID'.padStart(5)} ${'Name'.padEnd(20)} ${'Price'.padStart(10)} ${'Quantity'.padStart(10)}`)
-  for( var row of results ) {
-    console.log(`${(row.id + '').padStart(5)} ${row.product_name.padEnd(20)} ${('$ ' + row.price.toFixed(2)).padStart(10)} ${(row.stock_quantity+'').padStart(10)}`)
+  var data = []
+
+  var config = {
+    columns: {
+      0: {
+        alignment: 'right',
+      },
+      2: {
+        alignment: 'right',
+      },
+      3: {
+        alignment: 'right',
+      }
+    }
   }
-  console.log('\n\n')
+
+  var tableHeader = []
+  tableHeader.push('Product ID')
+  tableHeader.push('Product Name')
+  tableHeader.push('Price')
+  tableHeader.push('Quantity')
+  data.push( tableHeader )
+  for( var row of results ) {
+    var tableRow = []
+    tableRow.push(row.id)
+    tableRow.push(row.product_name)
+    tableRow.push('$ ' + row.price.toFixed(2))
+    tableRow.push(row.stock_quantity)
+    data.push(tableRow)
+  }
+  var output = table(data, config)
+  console.log(os.EOL+output+os.EOL)
 }
 
 function addToInventory() {
@@ -114,7 +143,6 @@ function addToInventory() {
       default: 0,
       filter: function(input) { return parseFloat(input) },
       validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
-      //prefix: '\u{1F427}',
     },{
       type: 'confirm',
       name: 'confirm',
@@ -125,6 +153,7 @@ function addToInventory() {
       if (answers.confirm) {
         await updateProduct(answers)
       }
+      console.log(os.EOL)
       resolve(true) 
     })
   })
@@ -134,7 +163,7 @@ function getProducts() {
   return new Promise( function(resolve, reject) {
     conn.query('SELECT * FROM products',
       function(error, results, fields){
-        if (error) throw reject(error)
+        if (error) reject(error)
 
         var arr = []
         for( var row of results ) {
@@ -157,8 +186,9 @@ function updateProduct(answers) {
       sql: 'UPDATE products SET stock_quantity=? WHERE id=?',
       values: [qtyTotal, answers.item.id]
     }, function(error, results, fields) {
-      if (error) throw reject(error)
+      if (error) reject(error)
 
+      console.log('\u{2705}  Quantity added.')
       resolve()
     })
   })
@@ -183,6 +213,11 @@ function addNewProduct() {
       filter: function(input) { return parseFloat(input) },
       validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
     },{
+      type: 'list',
+      name: 'department',
+      message: 'Department',
+      choices: getDepartments,
+    },{
       type: 'confirm',
       name: 'confirm',
       default: false,
@@ -191,8 +226,29 @@ function addNewProduct() {
       if (answers.confirm) {
         await insertProduct(answers)
       }
+      console.log(os.EOL)
       resolve() 
     })
+  })
+}
+
+function getDepartments() {
+  return new Promise( function(resolve, reject) {
+    conn.query('SELECT * FROM departments',
+      function(error, results, fields){
+        if (error) reject(error)
+
+        var arr = []
+        for( var row of results ) {
+          arr.push({
+            name: row.department_name,
+            value: {id: row.id},
+            short: row.department_name,
+          })
+        }
+        resolve(arr)
+      }
+    )
   })
 }
 
@@ -207,10 +263,11 @@ function insertProduct(answers) {
         product_name: answers.productName,
         price: price,
         stock_quantity: qty,
-        department_id: 1, 
+        department_id: answers.department.id, 
       },
     }, function(error, results, fields) {
       if (error) reject(error)
+
       console.log('\u{2705}  Done adding new product with id #' + results.insertId);
       resolve()
     })
