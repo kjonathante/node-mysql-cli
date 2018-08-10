@@ -14,7 +14,6 @@ conn.connect( function(error){
   if (error) {
     return console.log(error)
   }
-  //console.log( arguments )
   // start app
   main()
 })
@@ -56,7 +55,6 @@ async function main() {
         return
         break
       default:
-        console.log('Select Action');
         break;
     }
   } while (true);

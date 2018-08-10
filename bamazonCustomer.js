@@ -83,7 +83,7 @@ function checkQty(qty, answer) {
       sql: 'SELECT stock_quantity FROM products WHERE id=?',
       values: [answer.item.id]
     }, function(error, results, fields){
-      if (error) throw reject(error)
+      if (error) reject(error)
       
       resolve(results[0].stock_quantity>=quantity? true : 'Insufficient quantity!')
     })
