@@ -44,7 +44,7 @@ async function main() {
         await viewProductSales();
         break;
       case 'Create New Department':
-        // await viewLowInventory();
+        await addNewDepartment();
         break;
       case 'Exit':
         conn.end()
@@ -60,8 +60,8 @@ function viewProductSales() {
   return new Promise( function(resolve, reject) {
     conn.query(
       `SELECT departments.id department_id, department_name, 
-      over_head_costs, sum(product_sales) product_sales,
-      sum(product_sales) - over_head_costs total_profit
+      over_head_costs, COALESCE(SUM(product_sales),0) product_sales,
+      COALESCE(SUM(product_sales),0) - over_head_costs total_profit
       FROM departments 
       LEFT JOIN products 
       ON departments.id=products.department_id 
@@ -102,6 +102,7 @@ function printTable(results) {
 
 for( var row of results ) {
     var tableRow = []
+
     tableRow.push(row.department_id)
     tableRow.push(row.department_name)
     tableRow.push(row.over_head_costs.toFixed(2))
@@ -112,4 +113,49 @@ for( var row of results ) {
   }
   var output = table(data, config)
   console.log(os.EOL+output+os.EOL)
+}
+
+
+function addNewDepartment() {
+  return new Promise( function(resolve, reject) { 
+    inquirer.prompt([{
+      type: 'input',
+      name: 'departmentName',
+      message: 'Name of Department',
+    },{
+      type: 'input',
+      name: 'overheadCosts',
+      message: 'Estimated Overhead Costs',
+      filter: function(input) { return parseFloat(input) },
+      validate: function(input) { return parseFloat(input) >= 0 || 'Wrong Input' },
+    },{
+      type: 'confirm',
+      name: 'confirm',
+      default: false,
+      message: 'Proceed',
+    }]).then(async function(answers) {
+      if (answers.confirm) {
+        await insertDepartment(answers)
+      }
+      resolve() 
+    })
+  })
+}
+
+function insertDepartment(answers) {
+  return new Promise( function(resolve, reject) {
+    // making sure these resolves to numbers
+    var overheadCosts = parseFloat(answers.overheadCosts);
+    conn.query({
+      sql: 'INSERT INTO departments SET ?',
+      values: {
+        department_name: answers.departmentName,
+        over_head_costs: overheadCosts,
+      },
+    }, function(error, results, fields) {
+      if (error) reject(error)
+      console.log('\u{2705}  Done adding new department with id #' + results.insertId);
+      resolve()
+    })
+  })
 }
