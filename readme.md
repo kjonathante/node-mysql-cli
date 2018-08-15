@@ -15,3 +15,6 @@ This is the applet where you can purchase items from the store.
 ![Confirm](/images/cust03.png)
 1. Check the result.
 ![Result](/images/cust04.png)
+
+## bamazonManager
+![bamazonManager](/images/bamazonManager.png)
