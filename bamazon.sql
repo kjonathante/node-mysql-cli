@@ -31,11 +31,11 @@ INSERT INTO PRODUCTS (product_name, price, stock_quantity, department_id) VALUES
 ('Dress Shirt',    125, 50, 2),
 ('Jeans',          148, 50, 2),
 
-('Keyboard',       1.5, 50, 1),
-('Mouse',          1.5, 50, 1),
-('Monitor',        1.5, 50, 1),
-('Macbook Air',    1.5, 50, 1),
-('Processor',      1.5, 50, 1);
+('Keyboard',       12.5, 50, 1),
+('Mouse',          12.5, 50, 1),
+('Monitor',       220.5, 50, 1),
+('Macbook Air',   540.5, 50, 1),
+('Processor',     221.5, 50, 1);
 
 SELECT departments.id department_id, department_name, 
 over_head_costs, sum(product_sales) product_sales,
