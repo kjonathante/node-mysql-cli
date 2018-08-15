@@ -18,3 +18,6 @@ This is the applet where you can purchase items from the store.
 
 ## bamazonManager
 ![bamazonManager](/images/bamazonManager.png)
+
+## bamazonSupervisor
+![bamazonSupervisor](/images/bamazonSupervisor.png)
