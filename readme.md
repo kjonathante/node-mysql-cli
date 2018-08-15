@@ -1,9 +1,9 @@
-#StoreFront App
+# StoreFront App
 
-###This app is composed of 3 applets:
-bamazonCustomer.js
-bamazonManager.js
-bamazonSupervisor.js
+### This app is composed of 3 applets:
+* bamazonCustomer.js
+* bamazonManager.js
+* bamazonSupervisor.js
 
 ##bamazonCustomer
 This is the applet where you can purchase items from the store. 
