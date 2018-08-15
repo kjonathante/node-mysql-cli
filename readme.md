@@ -5,13 +5,13 @@
 * bamazonManager.js
 * bamazonSupervisor.js
 
-##bamazonCustomer
+## bamazonCustomer
 This is the applet where you can purchase items from the store. 
-Step 1. Select an item from the store.
+1. Select an item from the store.
 ![Make Selection](/images/cust01.png)
-Step 2. Enter the quantity of the item you are buying.
+1. Enter the quantity of the item you are buying.
 ![Enter Quantity](/images/cust02.png)
-Step 3. Confirm the transaction.
+1. Confirm the transaction.
 ![Confirm](/images/cust03.png)
-Result
+1. Check the result.
 ![Result](/images/cust04.png)
